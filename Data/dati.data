@@ -1,0 +1,30 @@
+[id_login]
+email = signup_determine_email
+go_password = forgot_password_link
+password = signup_password
+like = post_control.post-control-icon.like
+reblog = post_control.post-control-icon.reblog
+reblog_button = button-area.create_post_button
+post_create = compose-button
+post_button_cit = post-type-icon.icon-quote
+post_text = editor.editor-plaintext
+post_button = button-area.create_post_button
+
+
+[url]
+login = https://www.tumblr.com/login?redirect_to=%%2Fdashboard
+captcha = https://www.tumblr.com/login
+search = https://www.tumblr.com/search/
+search2 = /recent
+dashboard =https://www.tumblr.com/dashboard
+
+[config]
+limit_like_day = 100
+limit_reblog_day = 20
+delay = 3
+like_pass = 5
+reblog_pass = 1
+
+[class]
+like = post_control post-control-icon like
+reblog = post_control post-control-icon reblog

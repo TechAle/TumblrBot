@@ -21,7 +21,7 @@ for j in ip_dinanic:
         ## check if have finished and if contain </ul> -> finish
         if ok and not prova_1[i].__contains__('</ul>'):
             ## save all
-            with open('sentenc.txt','a') as f:
+            with open('./Text/sentenc.txt','a') as f:
                 f.write(prova_1[i][prova_1[i].find('</a>:</b>') + 10:prova_1[i].find('(<')].replace('<i>', '').replace('</i>','') + str('\n'))
                 num += 1
         else:

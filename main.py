@@ -1,5 +1,9 @@
 # TODO MAKE COMPATIBLE WITH WINDOWS (gekodriver path)
 
+## 1.2
+## Directory - Path
+## logging
+
 ## some library
 ## start firefox
 from selenium import webdriver
@@ -19,6 +23,10 @@ from cryptography.fernet import Fernet
 from configparser import ConfigParser
 ## for random tag
 import random
+## for log
+import logging
+## for get the plantform
+import sys
 
 
 ## for bypass
@@ -73,17 +81,24 @@ dati_url = ConfigParser()
 
 ## functions
 
+## get plantform for exec path
+def path_create():
+    pl_basic = sys.platform
+    if pl_basic == 'darwin':
+        return "/usr/local/bin/geckodriver"
+
 ## load data
 
 def load():
+    print('a')
     ## open and read
     global dati_url
     ## load json on the dictionary
-    dati_url.read('dati.data')
+    dati_url.read('./Data/dati.data')
     ## for account
     global account_exist
     ## load crypt
-    with open('crypt.data', 'r') as f:
+    with open('./Data/crypt.data', 'r') as f:
         ## if it's empty
         if len(f.read()) == 0:
             account_exist = 0
@@ -101,14 +116,14 @@ def load():
             if input('do you want remove the password? (y/n)')[0] == 'y':
                 bypass = 'this_is_a_secret'
             ## add password to file
-            with open('crypt.data', 'w') as r:
+            with open('./Data/crypt.data', 'w') as r:
                 ## add the key for the crypt
                 r.write('{},{}\n{}'.format(hashlib.sha256(str.encode(passw2)).hexdigest(), bypass, Fernet.generate_key()))
         ## controll the password
         else:
             account_exist = 1
             ## open the file for save the data
-            with open('crypt.data', 'r') as t:
+            with open('./Data/crypt.data', 'r') as t:
                 ## read password and bypass
                 provaaa = t.readline().split(',')
                 password_hash = provaaa[0]
@@ -133,11 +148,11 @@ def load():
                     else:
                         print('password is correct')
     ## dati (tag, time, accounts)
-    with open('dati_pers.data', 'r') as ra:
+    with open('./Data/dati_pers.data', 'r') as ra:
         empty = ra.read()
     ## controll if isnt empty
     if empty != '':
-        with open('dati_pers.data','r') as r_a:
+        with open('./Data/dati_pers.data','r') as r_a:
             ## controll tag
             prova = r_a.readline().split()
             global tag
@@ -300,9 +315,17 @@ class TumblrBot:
     ## initialization
     def __init__(self):
         ## load data
+        logging.info('loading data')
         load()
         ## start firefox
-        self.bot = webdriver.Firefox(executable_path = '/usr/local/bin/geckodriver')
+
+        try:
+            self.bot = webdriver.Firefox(executable_path = path_create(), log_path='./Log/gekodrive.log')
+        except:
+            print('error in line 311, controll the executable path')
+            logging.error('error line 311, executable error path: {}'.format(path_create()))
+            quit()
+        logging.info('start bot without error')
         ## se non ci sta nessuna email
         self.num = account_exist
         ## se dati[0] è soltanto {}
@@ -322,6 +345,7 @@ class TumblrBot:
 
         ## start iniziale
         def start(self):
+            print(dati_url['url']['login'])
             self.bot.get(dati_url['url']['login'])
             time.sleep(3)
             if self.bot.current_url == dati_url['url']['login']:
@@ -331,6 +355,7 @@ class TumblrBot:
 
         ## function login
         def login(self):
+            logging.info('start login')
             ## for make less length
             bot = self.bot
             ## initializazion choose
@@ -378,12 +403,13 @@ class TumblrBot:
                 TumblrBot.inizio(self)
 
         def captcha(self,passw_ins):
+            logging.info('captcha found')
             ## same of precedent
             password_path = self.bot.find_element_by_id(dati_url['id_login']['password'])
             password_path.clear()
             send.text(password_path,passw_ins)
             password_path.send_keys(data['password'])
-            print("completare il captcha")
+            print("complete the captcha")
             ## wait util url change
             TumblrBot.waiting(self)
             TumblrBot.inizio(self)
@@ -393,6 +419,7 @@ class TumblrBot:
 
     ## start with bot
     def inizio(self):
+        logging.info('start menu')
         ## print
         choose = 0
         while not choose == 6:
@@ -657,28 +684,33 @@ class TumblrBot:
     ## save tag, time, accounts
     def save(self):
         ## first tag, after time and after accounts
-        with open('dati_pers.data', 'w') as file_w:
+        with open('./Data/dati_pers.data', 'w') as file_w:
+            logging.info('start saving data')
             ## first line
             for i in tag:
                 file_w.write(_Cryptogr.str_b_f(i))
                 file_w.write(' ')
             file_w.write('\n')
             ## second line
+            logging.info('saved tags')
             for i in time_post:
                 file_w.write(_Cryptogr.str_b_f(i))
                 file_w.write(' ')
             file_w.write('\n')
+            logging.info('saved time_post')
             ## third line
             for i in lista:
                 file_w.write(_Cryptogr.str_b_f(i))
                 file_w.write(' ')
             file_w.write('\n')
+            logging.info('saved lista')
             ## final line
             for i in range(len(dati)):
                 file_w.write(_Cryptogr.str_b_f(dati[i]['email']))
                 file_w.write(' ')
                 file_w.write(_Cryptogr.str_b_f(dati[i]['password']))
                 file_w.write(' ')
+            logging.info('saved accounts')
 
 
 
@@ -721,7 +753,7 @@ class TumblrBot:
 
         ## automatic bot
         def automatic_bot_start(self):
-            print('prova')
+            logging.info('start bot')
             ## create time
             time_now = ':'.join(time.asctime().split()[3].split(':')[:2])
             ## controll
@@ -734,11 +766,14 @@ class TumblrBot:
                         choose_ = i.split(',')[1]
                         ## analyze
                         if choose_ == 'l':
+                            logging.info('start like')
                             TumblrBot.Bot_Class.like(self)
                         elif choose_ == 'r':
+                            logging.info('start reblog')
                             TumblrBot.Bot_Class.reblog(self)
                         elif choose_ == 'p':
-                            pass
+                            logging.info('start post')
+                            TumblrBot.Bot_Class.post_create(self)
                 print('waiting..')
                 waits(45)
 
@@ -795,7 +830,7 @@ class TumblrBot:
             self.bot.find_element_by_class_name(dati_url['id_login']['post_button_cit']).click()
             waits(1)
             ## create text
-            with open('sentenc.txt', 'r+') as f:
+            with open('./Text/sentenc.txt', 'r+') as f:
                 ## read all lines
                 f_l = f.readlines()
                 ## pointer to 0
@@ -812,7 +847,7 @@ class TumblrBot:
             global uff_tags
             for i in uff_tags:
                 ## take the path
-                path_ = self.bot.find_elements_by_class_name('editor.editor-plaintext')
+                path_ = self.bot.find_elements_by_class_name(dati_url['id_login']['post_text'])
                 ## send text and load it
                 send.text(path_[2],i)
                 waits(0.2)
@@ -824,15 +859,16 @@ class TumblrBot:
 
 
 
-
-
-
+## settings logging
+logging.basicConfig(filename='./Log/{}.log'.format(':'.join(time.asctime().split(' ')[2:-1])), level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def main():
+    logging.info('start bot without debug mode one')
     inizio = TumblrBot()
 if Debug != 1:
     main()
 else:
+    logging.info('start bot with debug mode one')
     load()
     TumblrBot.inizio(1)
