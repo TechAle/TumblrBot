@@ -71,8 +71,6 @@ dati_url = ConfigParser()
 
 ## account
 
-account_list = [{'email': 'alessandro.condello.email@gmail.com', 'password' : 'prova_tumblr'}]
-
 ## functions
 
 ## load data
