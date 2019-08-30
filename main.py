@@ -32,11 +32,7 @@ Debug = 0
 
 uff_tags = ['citazione','amore','solitudine']
 
-stand_data = \
-    {
-        'email' : 'alessandro.condello.email@gmail.com',
-        'password' : 'prova_tumblr'
-    }
+
 
 ## dati
 
@@ -406,9 +402,7 @@ class TumblrBot:
             choose = menu.first()
             ## start bot
             if choose == 1:
-                # TODO add a start of the bot
                 TumblrBot.Bot_Class(self.bot)
-                pass
             ## add tag
             elif choose == 2:
                 TumblrBot.tags(self)
@@ -802,8 +796,19 @@ class TumblrBot:
             ## click citation
             self.bot.find_element_by_class_name(dati_url['id_login']['post_button_cit']).click()
             waits(1)
+            ## create text
+            with open('sentenc.txt', 'r+') as f:
+                ## read all lines
+                f_l = f.readlines()
+                ## pointer to 0
+                f.seek(0)
+                ## write
+                for cont, item in enumerate(f_l):
+                    if cont != 0:
+                        f.write(item)
+                    else:
+                        text = item
             ## send text
-            text = 'aaa'
             send.text(self.bot.find_element_by_class_name(dati_url['id_login']['post_text']),text)
             ## create tags
             global uff_tags
