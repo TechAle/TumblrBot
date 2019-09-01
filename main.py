@@ -1,8 +1,7 @@
 # TODO MAKE COMPATIBLE WITH WINDOWS (gekodriver path)
 
 ## 1.2
-## Directory - Path
-## logging
+## better time
 
 ## some library
 ## start firefox
@@ -32,7 +31,7 @@ import sys
 ## for bypass
 bypass = '0'
 
-Debug = 0
+Debug = 1
 
 
 
@@ -64,10 +63,6 @@ num = 0
 ## tag
 
 tag = []
-
-## time
-
-time_post = []
 
 ## list time + what they do
 
@@ -157,10 +152,6 @@ def load():
             prova = r_a.readline().split()
             global tag
             tag = [_Cryptogr.f_b_str(i) for i in prova]
-            ## controll time
-            prova = r_a.readline().split()
-            global time_post
-            time_post = [_Cryptogr.f_b_str(i) for i in prova]
             ## controll lista
             global lista
             prova = r_a.readline().split()
@@ -230,7 +221,7 @@ class menu:
 
 ## control date
 class contr_date():
-    def first(date):
+    def first(self,date):
         if str.isnumeric(date[0]):
             ## check lenght
             first = date.split(':')[0]
@@ -253,7 +244,14 @@ class contr_date():
             print('date cannot be componed by some letter! ')
         return 0
 
-    def after(date,lenght):
+    def letter(self,letter_):
+        global possibility
+        if letter_[0] in possibility:
+            return 1
+        else:
+            return 0
+
+    def after(self,date,lenght):
         if str.isnumeric(date[0]):
             ## check lenght
             first = date.split(':')[0]
@@ -284,6 +282,19 @@ class contr_date():
             print('date cannot be componed by some letter! ')
         return 0
 
+    def analyz(self,date_, when,len_,mode):
+        ## analyze date
+        if mode == 0:
+            prova1 = contr_date.first(self,date_)
+        else:
+            prova1 = contr_date.after(self,date_,len_)
+        if prova1 == 1:
+            ## analyze letter
+            prova2 = contr_date.letter(self,when)
+            if prova2 == 1:
+                global lista
+                lista.append('{},{}'.format(date_, when))
+
 ## now time
 def now_time():
     now = time.asctime().split()[3].split(':')
@@ -304,10 +315,10 @@ class _Cryptogr:
 class input_time:
     def first():
         ## remove all duplicate + input
-        return input('choose when the bot will go (ex 15:30 10:00) ').split()
+        return input('choose when the bot will go (ex 15:30 p 10:00 r) ').split()
     ## input other time
     def other():
-        return list(set(input('choose when the bot will go (ex 15:30 10:00) and for remove some time, just write his number (5 12:12) -> 5 ').split()))
+        return input('choose when the bot will go (ex 15:30 p 10:00 r) and, if you want remove some, digit his number (1 - 15:15, 2 - 11:11) ').split()
 
 
 
@@ -433,7 +444,7 @@ class TumblrBot:
                 TumblrBot.tags(self)
             ## time
             elif choose == 3:
-                TumblrBot.timer(self)
+                TumblrBot.Settings_main.timer(self)
             ## setting
             elif choose == 4:
                 TumblrBot.Settings_main.menu(self)
@@ -445,39 +456,6 @@ class TumblrBot:
                 TumblrBot.save(self)
                 if Debug == 0:
                     self.bot.close()
-            print(lista)
-
-    def timer(self):
-        global time_post
-        ## add a new time
-        if not time_post:
-            choose = print("there arent any timer, please add some timer")
-            now_time()
-            ## input
-            time_text = input_time.first()
-            a = set(time_text)
-            print(list(a))
-
-            ## analyze + add
-            time_post = [time_text[i] for i in range(len(time_text)) if contr_date.first(time_text[i])]
-
-        else:
-            print('all timer: ')
-            for i in range(len(time_post)):
-                print('{} {}'.format(i+1,time_post[i]))
-            now_time()
-            ## input
-            time_text = input_time.other()
-            ## analyze
-            for i in range(len(time_text)):
-                choose = contr_date.after(time_text[i],len(time_post))
-                ## if time exist
-                if choose == 1:
-                    ## add / remove possible duplicate
-                    time_post = list(set(time_post) | set([time_text[i]]))
-                ## remove from time_post
-                elif choose == 2:
-                    time_post.pop(int(time_text[i])-1)
 
 
 
@@ -535,89 +513,32 @@ class TumblrBot:
         def timer(self):
             a = 0
             global tag
-            global time_post
             ## check if time and tags are created
             if not tag:
-                print('the tags havent been made')
+                print('the tags havent been made, please add some')
                 a += 1
-            if not time_post:
-                print('the timers havent been made')
-                a += 1
+                TumblrBot.tags(self)
             ## if they have been created
             if not a:
-                ## print all time
-                for i in range(len(time_post)):
-                    print('{} {}'.format(i+1, time_post[i]))
-                ## n^even number input
-                choose = menu.timer()
-
-                ## for finish
-                global finish__
-                finish__ = 0
-                ## for after number
-                global number__
-                number__ = 0
-                global prev__
-                ## global
-                len_max = len(time_post)
                 global lista
+                ## if lista isnt never created
+                if not lista:
+                    time_text = input_time.first()
+                    ## start
+                    for i in range(int(len(time_text) / 2)):
+                        j = i * 2
+                        contr_date.analyz(self,time_text[j], time_text[j + 1],0,0)
+                else:
+                    time_text = input_time.other()
+                    ## print all time
+                    for i in range(len(time_post)):
+                        print('{} {}'.format(i+1, time_post[i]))
+                    ## n^even number input
+                    for i in range(int(len(time_text) / 2)):
+                        j = i * 2
+                        contr_date.analyz(self,time_text[j], time_text[j + 1],len(lista),1)
+                lista = list(set(lista))
 
-                for i in range(len(choose)):
-                    ## if it doesn't ever encountered 'no'
-                    if finish__ == 0:
-                        decision = TumblrBot.Settings_main.analyze(self, choose[i],len_max,i)
-
-
-
-        ## analyze the choose
-        def analyze(self, sent,len_max,cont):
-            global number__
-            global finish__
-            global prev__
-            global possibility
-            global lista
-            ## finish
-            if sent == 'no' or sent=='x':
-                finish = 1
-            else:
-                ## control if is a number
-                if str.isnumeric(sent):
-                    ## if yes
-                    if int(sent) >= 1 and int(sent) <= len_max:
-                        ## for the next round
-                        number__ = 1
-                        prev__ = time_post[int(sent)-1].split(',')[0]
-                        print(prev__)
-                    else:
-                        ## error number
-                        print('{} is too big'.format(sent))
-                ## if isnt a number and previously there is a number
-                elif number__:
-                    ## check if the letter exist
-                    if sent[0] in possibility:
-                        ## if yes
-                        ## if list isnt empty
-                        if lista:
-                            ## control if the number exist
-                            i = 0
-                            fine_ck = 0
-                            ## while i < lenght of list and 'if' has never been opened
-                            while i < len(lista) and not fine_ck:
-                                print('a')
-                                ## control if exist
-                                if lista[i].split(',')[0] == prev__:
-                                    ## if yes remove
-                                    lista.pop(i)
-                                    fine_ck = 1
-
-
-                                i = i + 1
-                            lista.append(prev__ + ',' + sent)
-                        ## append to list
-                        else:
-                            lista.append(str(time_post[cont] + ',' + sent))
-                    else:
-                        print('{} dont exist'.format(sent))
 
 
         def req_account(self):
@@ -693,12 +614,6 @@ class TumblrBot:
             file_w.write('\n')
             ## second line
             logging.info('saved tags')
-            for i in time_post:
-                file_w.write(_Cryptogr.str_b_f(i))
-                file_w.write(' ')
-            file_w.write('\n')
-            logging.info('saved time_post')
-            ## third line
             for i in lista:
                 file_w.write(_Cryptogr.str_b_f(i))
                 file_w.write(' ')
