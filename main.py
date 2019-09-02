@@ -1,8 +1,9 @@
 # TODO MAKE COMPATIBLE WITH WINDOWS (gekodriver path)
+# TODO MAKE SECOND TERMINAL FOR WINDOWS
+# TODO MAKE SECOND TERMINAL FOR LINUX
 
 ## 1.2
 ## better time
-
 ## some library
 ## start firefox
 from selenium import webdriver
@@ -26,12 +27,14 @@ import random
 import logging
 ## for get the plantform
 import sys
+## for start script
+import os
 
 
 ## for bypass
 bypass = '0'
 
-Debug = 1
+Debug = 0
 
 
 
@@ -85,7 +88,6 @@ def path_create():
 ## load data
 
 def load():
-    print('a')
     ## open and read
     global dati_url
     ## load json on the dictionary
@@ -215,6 +217,9 @@ class menu:
 
     def bot_m():
         return rich_num('1) like post\n2) reblog\n3) time post\n4) automac bot\n5) post',5)
+
+    def file_control_m():
+        return rich_num("1) force like\n2) force reblog\n3) force post\n4) exit",4)
 
 
 ## classes
@@ -531,8 +536,8 @@ class TumblrBot:
                 else:
                     time_text = input_time.other()
                     ## print all time
-                    for i in range(len(time_post)):
-                        print('{} {}'.format(i+1, time_post[i]))
+                    for i in range(len(lista)):
+                        print('{} {}'.format(i+1, lista[i]))
                     ## n^even number input
                     for i in range(int(len(time_text) / 2)):
                         j = i * 2
@@ -639,7 +644,7 @@ class TumblrBot:
         def __init__(self,bot):
             self.bot = bot
             ## controll tag and time_post
-            if time_post and tag:
+            if tag:
                 ## input the choose
                 choose = menu.bot_m()
                 ## analyze choose
@@ -672,12 +677,17 @@ class TumblrBot:
             ## create time
             time_now = ':'.join(time.asctime().split()[3].split(':')[:2])
             ## controll
-
-            while self.bot.current_url.__contains__('tumblr'):
+            exit = 1
+            force = 0
+            logging.info('start script for 2 console')
+            os.system('osascript ./script/mac.scpt')
+            with open('./Data/Conv.data', 'w') as f:
+                f.write('0')
+            while self.bot.current_url.__contains__('tumblr') and exit:
                 time_now = ':'.join(time.asctime().split()[3].split(':')[:2])
                 ## controll all time
                 for i in lista:
-                    if time_now in i.split(',')[0]:
+                    if time_now == i.split(',')[0]:
                         choose_ = i.split(',')[1]
                         ## analyze
                         if choose_ == 'l':
@@ -689,8 +699,29 @@ class TumblrBot:
                         elif choose_ == 'p':
                             logging.info('start post')
                             TumblrBot.Bot_Class.post_create(self)
+
+
                 print('waiting..')
-                waits(45)
+                ## for the force
+                if int(force) == 0:
+                    with open('./Data/Conv.data', 'r') as f:
+                        text = f.read()
+                        if text:
+                            force = text
+                    with open('./Data/Conv.data', 'w') as f:
+                        f.write('0')
+
+                print(force)
+                if int(force) > 0:
+                    if force == "1":
+                        TumblrBot.Bot_Class.like(self)
+                    elif force == "2":
+                        TumblrBot.Bot_Class.reblog(self)
+                    elif force == "3":
+                        TumblrBot.Bot_Class.post_create(self)
+                    force = 0
+
+                waits(20)
 
             self.bot.get(dati_url['url']['dashboard'])
 
@@ -772,18 +803,20 @@ class TumblrBot:
             self.bot.find_element_by_class_name(dati_url['id_login']['post_button']).click()
 
 
+if __name__ == "__main__":
+
+    ## settings logging
+    time__ = ':'.join(time.asctime().split(' ')[2:-1])
+    logging.basicConfig(filename='./Log/{}.log'.format(time__), level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    os.system('open ./Log/{}.log'.format(time__))
 
 
-## settings logging
-logging.basicConfig(filename='./Log/{}.log'.format(':'.join(time.asctime().split(' ')[2:-1])), level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-def main():
-    logging.info('start bot without debug mode one')
-    inizio = TumblrBot()
-if Debug != 1:
-    main()
-else:
-    logging.info('start bot with debug mode one')
-    load()
-    TumblrBot.inizio(1)
+    def main():
+        logging.info('start bot without debug mode one')
+        inizio = TumblrBot()
+    if Debug != 1:
+        main()
+    else:
+        logging.info('start bot with debug mode one')
+        load()
+        TumblrBot.inizio(1)
