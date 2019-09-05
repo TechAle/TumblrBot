@@ -1,11 +1,7 @@
-# TODO MAKE COMPATIBLE WITH WINDOWS (gekodriver path)
-# TODO MAKE SECOND TERMINAL FOR WINDOWS
 # TODO MAKE SECOND TERMINAL FOR LINUX
 
-## 1.2
-## better time
-## some library
-## start firefox
+## 1.4
+## compatibilities with window system
 from selenium import webdriver
 ## for enter
 from selenium.webdriver.common.keys import Keys
@@ -75,15 +71,29 @@ lista = []
 
 dati_url = ConfigParser()
 
+## plantform
+
+plant = ''
+
 ## account
 
 ## functions
 
 ## get plantform for exec path
 def path_create():
-    pl_basic = sys.platform
-    if pl_basic == 'darwin':
+    if plant == 'mac':
         return "/usr/local/bin/geckodriver"
+    elif plant == 'win':
+        return "C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python37_64\geckodriver.exe"
+
+## get os
+def os_get_():
+    if sys.platform == 'darwin':
+        return 'mac'
+    elif sys.platform == 'win32':
+        return 'win'
+    else:
+        return 'lin'
 
 ## load data
 
@@ -330,13 +340,17 @@ class input_time:
 class TumblrBot:
     ## initialization
     def __init__(self):
+        global plant
         ## load data
         logging.info('loading data')
         load()
         ## start firefox
 
         try:
-            self.bot = webdriver.Firefox(executable_path = path_create(), log_path='./Log/gekodrive.log')
+            if plant != 'win':
+                self.bot = webdriver.Firefox(executable_path = path_create(), log_path='./Log/gekodrive.log')
+            else:
+                self.bot = webdriver.Firefox(executable_path= path_create(),service_log_path='.\Log\gekodrive.log')
         except:
             print('error in line 311, controll the executable path')
             logging.error('error line 311, executable error path: {}'.format(path_create()))
@@ -345,23 +359,22 @@ class TumblrBot:
         ## se non ci sta nessuna email
         self.num = account_exist
         ## se dati[0] è soltanto {}
-        if not bool(dati[0]):
+        if not dati:
             ## chiedere quante email
             self.num = rich_num("how many email do you want? ", 5)
         ## inizio loop aggiunta
             for i in range(self.num):
                 ## aggiungere dizionari
-                if i != 0:
-                    dati.append({})
+                dati.append({})
                 ## inserire gli input
                 dati[i]['email'],dati[i]['password'] = TumblrBot.Settings_main.req_account(self)
+                dati[i]['email'],dati[i]['password'] = 'alessandro.condello.email@gmail.com','prova_tumblr'
         self.Start_main.start(self)
 
     class Start_main():
 
         ## start iniziale
         def start(self):
-            print(dati_url['url']['login'])
             self.bot.get(dati_url['url']['login'])
             time.sleep(3)
             if self.bot.current_url == dati_url['url']['login']:
@@ -680,7 +693,10 @@ class TumblrBot:
             exit = 1
             force = 0
             logging.info('start script for 2 console')
-            os.system('osascript ./script/mac.scpt')
+            if plant == 'mac':
+                os.system('osascript ./script/mac.scpt')
+            elif plant == 'win':
+                os.system('start cmd.exe @cmd /k python file_controll.py')
             with open('./Data/Conv.data', 'w') as f:
                 f.write('0')
             while self.bot.current_url.__contains__('tumblr') and exit:
@@ -805,10 +821,29 @@ class TumblrBot:
 
 if __name__ == "__main__":
 
+    ## check os
+
+    plant = os_get_()
+
     ## settings logging
-    time__ = ':'.join(time.asctime().split(' ')[2:-1])
-    logging.basicConfig(filename='./Log/{}.log'.format(time__), level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    os.system('open ./Log/{}.log'.format(time__))
+
+    ### mac and windows has different way to write the ascii time (idk why)
+    ## if date is 05/09/2019 it will put 5:09
+    begin = ''
+    win_begin = 0
+    path_ = './Log/{}.log'
+    if plant == 'win':
+        if time.asctime().split(':')[0].split()[3].__contains__('0'):
+            begin = '0'
+        win_begin = 1
+        path_ = '.\Log\{}.log'
+
+
+    time__ = begin + ('_'.join(time.asctime().split(' ')[2:-1])[win_begin:]).replace(':','_')
+    print(time__)
+    logging.basicConfig(filename=path_.format(time__), level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    if plant == 'mac' or plant == 'lin':
+        os.system('open ./Log/{}.log'.format(time__))
 
 
     def main():
