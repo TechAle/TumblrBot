@@ -13,10 +13,8 @@ def rich_num(sentec, max):
 
 
 choose = 0
-current_path = ''
-if sys.platform == 'mac':
-    current_path = '/'.join(os.path.realpath(__file__).split('/')[:-1]) + '/'
+path = os.path.realpath(__file__).replace('file_controll.py','')
 while choose != 4:
     choose = rich_num('1) force like\n2) force reblog\n3) force post\n4) exit',4)
-    with open('{}./Data/Conv.data'.format(current_path),'w') as f:
+    with open('{}./Data/Conv.data'.format(path),'w') as f:
         f.write(str(choose))

@@ -1,7 +1,7 @@
 # TODO MAKE SECOND TERMINAL FOR LINUX
 
-## 1.4
-## compatibilities with window system
+## 1.5
+## bug fixing + improving
 from selenium import webdriver
 ## for enter
 from selenium.webdriver.common.keys import Keys
@@ -101,7 +101,11 @@ def load():
     ## open and read
     global dati_url
     ## load json on the dictionary
-    dati_url.read('./Data/dati.data')
+    try:
+        dati_url.read('./Data/dati.data')
+    except:
+        logging.error('file dati.data didnt found')
+        os.close()
     ## for account
     global account_exist
     ## load crypt
@@ -193,6 +197,34 @@ def rich_num(sentec, max):
         if num1 < 1 or num1 > max:
             print("invalid number (1-{})".format(max))
     return num1
+
+## function for checking the css is ok (if not the connection is poor)
+def ric_check_css(path,choose,text,bot,id,error_):
+
+    for i in range(5):
+        waits(2)
+        try:
+            ## check id
+            if id == 0:
+                path_ck = bot.find_element_by_id(path)
+            ## check class
+            else:
+                path_ck = bot.find_element_by_class_name(path)
+            ## choose text
+            if choose == 0:
+                ## clear for prevention
+                path_ck.clear()
+                ## press enter
+                send.text(path_ck,text)
+                waits(0.1)
+                send.enter(path_ck)
+            ## choose button
+            else:
+                path_ck.click()
+            return 1
+        except:
+            logging.warn('error {}'.format(error_))
+    return 0
 
 class send:
 ## click enter
@@ -358,6 +390,7 @@ class TumblrBot:
         logging.info('start bot without error')
         ## se non ci sta nessuna email
         self.num = account_exist
+        print(self.bot.find_elements_by_class_name('prova'))
         ## se dati[0] è soltanto {}
         if not dati:
             ## chiedere quante email
@@ -379,6 +412,10 @@ class TumblrBot:
             time.sleep(3)
             if self.bot.current_url == dati_url['url']['login']:
                 TumblrBot.Start_main.login(self)
+            elif self.bot.current_url == dati_url['url']['concent']:
+                self.bot.find_element_by_class_name(dati_url['url']['concent']).click()
+                waits(1)
+                TumblrBot.Settings_main(self)
             else:
                 TumblrBot.inizio(self)
 
@@ -402,27 +439,38 @@ class TumblrBot:
             email_ins = dati[choose]['email']
             passw_ins = dati[choose]['password']
             ## entering date
-            email_path = bot.find_element_by_id(dati_url['id_login']['email'])
-            ## clear
-            email_path.clear()
-            ## start email
-            ## insert email in path
-            send.text(email_path,email_ins)
-            ## press enter
-            send.enter(email_path)
-            ## loading
-            waits(2)
+            if not ric_check_css(dati_url['id_login']['email'],0,email_ins,bot,0,'email ins'):
+                logging.error('the page didnt load')
+                sys.exit()
+            # email_path = bot.find_element_by_id(dati_url['id_login']['email'])
+            # ## clear
+            # email_path.clear()
+            # ## start email
+            # ## insert email in path
+            # send.text(email_path,email_ins)
+            # ## press enter
+            # send.enter(email_path)
+            # ## loading
+            # waits(2)
             ## remove 2 process (magic link)
-            proc2 = bot.find_element_by_class_name(dati_url['id_login']['go_password'])
-            proc2.click()
-            ## loading
-            waits(2)
+            if not ric_check_css(dati_url['id_login']['go_password'],1,'',bot,1,'go to pass'):
+                logging.error('the page didnt load')
+                sys.exit()
+            #
+            # proc2 = bot.find_element_by_class_name(dati_url['id_login']['go_password'])
+            # proc2.click()
+            # ## loading
+            # waits(2)
             ## password
             ## same for email
-            password_path = bot.find_element_by_id(dati_url['id_login']['password'])
-            password_path.clear()
-            send.text(password_path,passw_ins)
-            send.enter(password_path)
+            if not ric_check_css(dati_url['id_login']['password'],0,passw_ins,bot,0,'passw ins'):
+                logging.error('the page didnt load')
+                sys.exit()
+
+            # password_path = bot.find_element_by_id(dati_url['id_login']['password'])
+            # password_path.clear()
+            # send.text(password_path,passw_ins)
+            # send.enter(password_path)
             ## change page
             time.sleep(3)
             ## check for the captcha
@@ -782,7 +830,11 @@ class TumblrBot:
 
                     waits(int(dati_url['config']['delay']))
                 i += 1
-        ## add a post
+        # add a post
+
+
+
+
         def post_create(self):
             ## create post
             ## click post
@@ -827,16 +879,12 @@ if __name__ == "__main__":
 
     ## settings logging
 
-    ### mac and windows has different way to write the ascii time (idk why)
-    ## if date is 05/09/2019 it will put 5:09
+
     begin = ''
-    win_begin = 0
     path_ = './Log/{}.log'
-    if plant == 'win':
-        if time.asctime().split(':')[0].split()[3].__contains__('0'):
-            begin = '0'
-        win_begin = 1
-        path_ = '.\Log\{}.log'
+    if time.asctime().split(':')[0].split()[3].__contains__('0'):
+        begin = '0'
+    win_begin = 1
 
 
     time__ = begin + ('_'.join(time.asctime().split(' ')[2:-1])[win_begin:]).replace(':','_')
