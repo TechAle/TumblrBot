@@ -25,6 +25,9 @@ import logging
 import sys
 ## for start script
 import os
+## for multiple threading (automatic bot)
+from threading import Thread
+from queue import Queue
 
 
 ## for bypass
@@ -387,7 +390,7 @@ class TumblrBot:
             print('error in line 311, controll the executable path')
             logging.error('error line 311, executable error path: {}'.format(path_create()))
             quit()
-        logging.info('start bot without error')
+        logging.info('started bot without error')
         ## se non ci sta nessuna email
         self.num = account_exist
         print(self.bot.find_elements_by_class_name('prova'))
@@ -735,21 +738,17 @@ class TumblrBot:
         ## automatic bot
         def automatic_bot_start(self):
             logging.info('start bot')
-            ## create time
-            time_now = ':'.join(time.asctime().split()[3].split(':')[:2])
-            ## controll
-            exit = 1
+            ## Thread
+            que = Queue()
+            t_req = Thread(target=lambda q, : q.put(TumblrBot.Bot_Class.Controll()), args=(que, ))
+            t_req.start()
+            ## settings varialbe
             force = 0
-            logging.info('start script for 2 console')
-            if plant == 'mac':
-                os.system('osascript ./script/mac.scpt')
-            elif plant == 'win':
-                os.system('start cmd.exe @cmd /k python file_controll.py')
-            with open('./Data/Conv.data', 'w') as f:
-                f.write('0')
-            while self.bot.current_url.__contains__('tumblr') and exit:
+
+            while force != 4:
+                ## create time
                 time_now = ':'.join(time.asctime().split()[3].split(':')[:2])
-                ## controll all time
+                ## controll all time (lista contains all time)
                 for i in lista:
                     if time_now == i.split(',')[0]:
                         choose_ = i.split(',')[1]
@@ -763,31 +762,30 @@ class TumblrBot:
                         elif choose_ == 'p':
                             logging.info('start post')
                             TumblrBot.Bot_Class.post_create(self)
-
-
-                print('waiting..')
-                ## for the force
-                if int(force) == 0:
-                    with open('./Data/Conv.data', 'r') as f:
-                        text = f.read()
-                        if text:
-                            force = text
-                    with open('./Data/Conv.data', 'w') as f:
-                        f.write('0')
-
-                print(force)
-                if int(force) > 0:
-                    if force == "1":
+                ## check thread request
+                if(not t_req.is_alive()):
+                    ## get output
+                    result = que.get()
+                    force = int(result)
+                    ## controll force
+                    if force == 1:
                         TumblrBot.Bot_Class.like(self)
-                    elif force == "2":
+                    elif force == 2:
                         TumblrBot.Bot_Class.reblog(self)
-                    elif force == "3":
+                    elif force == 3:
                         TumblrBot.Bot_Class.post_create(self)
-                    force = 0
+                    if force != 4:
+                        ## reset
+                        force = 0
+                        t_req = Thread(target=lambda q,: q.put(TumblrBot.Bot_Class.Controll()), args=(que,))
+                        t_req.start()
 
-                waits(20)
 
+            ## finish
             self.bot.get(dati_url['url']['dashboard'])
+
+        def Controll():
+            return menu.file_control_m()
 
 
 

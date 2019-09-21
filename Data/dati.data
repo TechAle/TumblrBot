@@ -16,7 +16,8 @@ login = https://www.tumblr.com/login?redirect_to=%%2Fdashboard
 captcha = https://www.tumblr.com/login
 search = https://www.tumblr.com/search/
 search2 = /recent
-dashboard =https://www.tumblr.com/dashboard
+dashboard = https://www.tumblr.com/dashboard
+concent = https://www.tumblr.com/privacy/consent?redirect=https%3A%2F%2Fwww.tumblr.com%2Fdashboard
 
 [config]
 limit_like_day = 100
@@ -28,3 +29,4 @@ reblog_pass = 1
 [class]
 like = post_control post-control-icon like
 reblog = post_control post-control-icon reblog
+btn.yes = dopo
